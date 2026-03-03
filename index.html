@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recruiting Dashboard | Celestial Space</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0d0b1f;
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --accent-purple: #be9eff;
+            --accent-blue: #70aeff;
+            --accent-orange: #ffb86c;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0b0;
+            --status-top: #34d399;
+            --status-not: #f87171;
+            --card-glow: 0 8px 32px 0 rgba(138, 43, 226, 0.2);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+            background-image:
+                radial-gradient(circle at 10% 20%, rgba(138, 43, 226, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(65, 105, 225, 0.15) 0%, transparent 40%);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        header {
+            margin-bottom: 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .title-group h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(to right, var(--accent-purple), var(--accent-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+
+        .title-group p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        /* Tab Navigation */
+        .tab-nav {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 30px;
+        }
+
+        .tab-btn {
+            padding: 12px 28px;
+            border-radius: 14px;
+            border: 1px solid var(--glass-border);
+            background: var(--glass-bg);
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            font-weight: 600;
+            font-family: 'Outfit', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(12px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tab-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 0;
+        }
+
+        .tab-btn span {
+            position: relative;
+            z-index: 1;
+        }
+
+        .tab-btn:hover {
+            border-color: var(--accent-purple);
+            color: var(--text-primary);
+            transform: translateY(-2px);
+        }
+
+        .tab-btn.active {
+            border-color: transparent;
+            color: white;
+            box-shadow: 0 4px 20px rgba(190, 158, 255, 0.3);
+        }
+
+        .tab-btn.active::before {
+            opacity: 1;
+        }
+
+        .tab-count {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            margin-left: 8px;
+        }
+
+        .tab-btn.active .tab-count {
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(12px);
+            padding: 24px;
+            border-radius: 20px;
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--card-glow);
+        }
+
+        .stat-card h3 {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+        }
+
+        .stat-card .value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent-purple);
+        }
+
+        .search-filters {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .search-bar {
+            flex-grow: 1;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            padding: 15px 25px;
+            border-radius: 12px;
+            color: white;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        .search-bar:focus {
+            border-color: var(--accent-purple);
+        }
+
+        .table-container {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(12px);
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        thead {
+            background: rgba(255, 255, 255, 0.03);
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        th {
+            padding: 20px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        td {
+            padding: 20px;
+            border-bottom: 1px solid var(--glass-border);
+            vertical-align: middle;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .applicant-name {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .status-top {
+            background: rgba(52, 211, 153, 0.1);
+            color: var(--status-top);
+            border: 1px solid rgba(52, 211, 153, 0.2);
+        }
+
+        .status-not {
+            background: rgba(248, 113, 113, 0.1);
+            color: var(--status-not);
+            border: 1px solid rgba(248, 113, 113, 0.2);
+        }
+
+        .action-links {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn-icon {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.3s ease, transform 0.2s ease;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-icon:hover {
+            color: var(--accent-blue);
+            transform: scale(1.1);
+        }
+
+        .btn-resume {
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: opacity 0.3s ease, transform 0.2s ease;
+            display: inline-block;
+        }
+
+        .btn-resume:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+
+        .btn-resume.disabled {
+            background: #444;
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        .portfolio-link {
+            color: var(--accent-blue);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .portfolio-link:hover {
+            text-decoration: underline;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .table-container {
+            animation: fadeIn 0.8s ease-out forwards;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .search-filters {
+                flex-direction: column;
+            }
+
+            .tab-nav {
+                flex-direction: column;
+            }
+
+            th:nth-child(3),
+            td:nth-child(3),
+            th:nth-child(4),
+            td:nth-child(4) {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <div class="title-group">
+                <h1>Recruiting Pipeline</h1>
+                <p id="subtitleText">3D Generalist Role • 146 Total Applicants</p>
+            </div>
+            <div class="logo">
+                <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="40" height="40" rx="10" fill="url(#paint0_linear)" />
+                    <path d="M20 10L28.6603 25H11.3397L20 10Z" fill="white" />
+                    <defs>
+                        <linearGradient id="paint0_linear" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+                            <stop stop-color="#be9eff" />
+                            <stop offset="1" stop-color="#70aeff" />
+                        </linearGradient>
+                    </defs>
+                </svg>
+            </div>
+        </header>
+
+        <div class="tab-nav" id="tabNav">
+            <button class="tab-btn active" data-tab="3d-generalist" onclick="switchTab('3d-generalist')">
+                <span>🎨 3D Generalists <span class="tab-count" id="tab3dCount">0</span></span>
+            </button>
+            <button class="tab-btn" data-tab="character-animator" onclick="switchTab('character-animator')">
+                <span>🎬 Character Animators <span class="tab-count" id="tabAnimatorCount">0</span></span>
+            </button>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Total Applicants</h3>
+                <div class="value" id="statTotal">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Top Picks</h3>
+                <div class="value" id="statTopPicks">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Other</h3>
+                <div class="value" id="statOther">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Interviewing</h3>
+                <div class="value" id="statInterviewing">0</div>
+            </div>
+        </div>
+
+        <div class="search-filters">
+            <input type="text" class="search-bar" id="searchInput" placeholder="Search by name, role or category...">
+        </div>
+
+        <div class="table-container">
+            <table id="applicantsTable">
+                <thead>
+                    <tr>
+                        <th>Applicant</th>
+                        <th>Links</th>
+                        <th>Portfolio</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <!-- Data will be injected here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        let allData = {
+            '3d-generalist': [],
+            'character-animator': []
+        };
+        let currentTab = '3d-generalist';
+
+        const tabConfig = {
+            '3d-generalist': {
+                file: 'applicants.json',
+                role: '3D Generalist',
+                subtitle: (count) => `3D Generalist Role • ${count} Total Applicants`
+            },
+            'character-animator': {
+                file: 'character_animators.json',
+                role: 'Character Animator',
+                subtitle: (count) => `Character Animator Role • ${count} Applicants`
+            }
+        };
+
+        function renderTable(data) {
+            const tableBody = document.getElementById('tableBody');
+            tableBody.innerHTML = '';
+
+            const total = data.length;
+            const topPicks = data.filter(a => a.fit_category === 'Top fit').length;
+            const other = data.filter(a => a.fit_category !== 'Top fit').length;
+
+            document.getElementById('statTotal').textContent = total;
+            document.getElementById('statTopPicks').textContent = topPicks;
+            document.getElementById('statOther').textContent = other;
+
+            const config = tabConfig[currentTab];
+            document.getElementById('subtitleText').textContent = config.subtitle(total);
+
+            data.forEach(app => {
+                const tr = document.createElement('tr');
+
+                const statusClass = app.fit_category === 'Top fit' ? 'status-top' : 'status-not';
+                let portfolio;
+                if (app.portfolio_link && app.portfolio_link.startsWith('http')) {
+                    portfolio = `<a href="${app.portfolio_link}" target="_blank" class="portfolio-link">View Portfolio</a>`;
+                } else if (app.portfolio_link === 'Check Resume') {
+                    portfolio = '<span style="color:var(--accent-purple); font-size: 0.85rem;">Inside Resume</span>';
+                } else {
+                    portfolio = '<span style="color:#666">Not Provided</span>';
+                }
+
+                let resumeBtn;
+                if (app.resume_link && (app.resume_link.startsWith('http') || app.resume_link.startsWith('CVs/'))) {
+                    resumeBtn = `<a href="${encodeURI(app.resume_link)}" target="_blank" class="btn-resume">Download Resume</a>`;
+                } else {
+                    resumeBtn = `<button class="btn-resume disabled">No Resume Link</button>`;
+                }
+
+                tr.innerHTML = `
+                    <td>
+                        <div class="applicant-name">${app.name}</div>
+                        <div style="font-size:0.85rem; color:var(--text-secondary)">${config.role}</div>
+                    </td>
+                    <td>
+                        <div class="action-links">
+                            <a href="${app.linkedin_profile}" target="_blank" class="btn-icon" title="LinkedIn">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+                            </a>
+                        </div>
+                    </td>
+                    <td>${portfolio}</td>
+                    <td>${resumeBtn}</td>
+                `;
+                tableBody.appendChild(tr);
+            });
+        }
+
+        function switchTab(tabId) {
+            currentTab = tabId;
+
+            // Update active tab button
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.tab === tabId);
+            });
+
+            // Clear search
+            document.getElementById('searchInput').value = '';
+
+            // Render data for this tab
+            renderTable(allData[tabId]);
+        }
+
+        async function loadAllData() {
+            try {
+                // Load both data sources in parallel
+                const [generalistRes, animatorRes] = await Promise.all([
+                    fetch('applicants.json?t=' + new Date().getTime()),
+                    fetch('character_animators.json?t=' + new Date().getTime())
+                ]);
+
+                allData['3d-generalist'] = await generalistRes.json();
+                allData['character-animator'] = await animatorRes.json();
+
+                // Update tab counts
+                document.getElementById('tab3dCount').textContent = allData['3d-generalist'].length;
+                document.getElementById('tabAnimatorCount').textContent = allData['character-animator'].length;
+
+                // Render initial tab
+                renderTable(allData[currentTab]);
+
+                // Search functionality
+                document.getElementById('searchInput').addEventListener('input', (e) => {
+                    const term = e.target.value.toLowerCase();
+                    const filtered = allData[currentTab].filter(app =>
+                        app.name.toLowerCase().includes(term) ||
+                        app.fit_category.toLowerCase().includes(term)
+                    );
+                    renderTable(filtered);
+                });
+
+            } catch (err) {
+                console.error('Error loading data:', err);
+                document.getElementById('tableBody').innerHTML = '<tr><td colspan="5" style="text-align:center; padding:40px;">Error loading applicant data. Please ensure JSON files are present.</td></tr>';
+            }
+        }
+
+        loadAllData();
+    </script>
+</body>
+
+</html>
