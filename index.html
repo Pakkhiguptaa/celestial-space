@@ -16,6 +16,7 @@
             --accent-purple: #be9eff;
             --accent-blue: #70aeff;
             --accent-orange: #ffb86c;
+            --accent-teal: #4fd1c5;
             --text-primary: #ffffff;
             --text-secondary: #a0a0b0;
             --status-top: #34d399;
@@ -265,6 +266,7 @@
         .action-links {
             display: flex;
             gap: 15px;
+            align-items: center;
         }
 
         .btn-icon {
@@ -305,6 +307,30 @@
             background: #444;
             cursor: not-allowed;
             opacity: 0.5;
+        }
+
+        .btn-shortlist {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            padding: 8px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-shortlist:hover {
+            border-color: var(--accent-teal);
+            color: white;
+        }
+
+        .btn-shortlist.active {
+            background: rgba(79, 209, 197, 0.2);
+            border-color: var(--accent-teal);
+            color: var(--accent-teal);
         }
 
         .portfolio-link {
@@ -385,6 +411,9 @@
             <button class="tab-btn" data-tab="character-animator" onclick="switchTab('character-animator')">
                 <span>🎬 Character Animators <span class="tab-count" id="tabAnimatorCount">0</span></span>
             </button>
+            <button class="tab-btn" data-tab="for-interview" onclick="switchTab('for-interview')">
+                <span>🤝 FOR INTERVIEW <span class="tab-count" id="tabShortlistCount">0</span></span>
+            </button>
         </div>
 
         <div class="stats-grid">
@@ -401,7 +430,7 @@
                 <div class="value" id="statOther">0</div>
             </div>
             <div class="stat-card">
-                <h3>Interviewing</h3>
+                <h3>Shortlisted</h3>
                 <div class="value" id="statInterviewing">0</div>
             </div>
         </div>
@@ -414,6 +443,7 @@
             <table id="applicantsTable">
                 <thead>
                     <tr>
+                        <th style="width: 50px;"></th>
                         <th>Applicant</th>
                         <th>Links</th>
                         <th>Portfolio</th>
@@ -444,14 +474,49 @@
                 file: 'character_animators.json',
                 role: 'Character Animator',
                 subtitle: (count) => `Character Animator Role • ${count} Applicants`
+            },
+            'for-interview': {
+                role: 'Shortlisted Candidate',
+                subtitle: (count) => `Interview Pipeline • ${count} Shortlisted Candidates`
             }
         };
+
+        function getShortlisted() {
+            const stored = localStorage.getItem('shortlisted_applicants');
+            return stored ? JSON.parse(stored) : [];
+        }
+
+        function toggleShortlist(applicantName) {
+            let shortlisted = getShortlisted();
+            if (shortlisted.includes(applicantName)) {
+                shortlisted = shortlisted.filter(n => n !== applicantName);
+            } else {
+                shortlisted.push(applicantName);
+            }
+            localStorage.setItem('shortlisted_applicants', JSON.stringify(shortlisted));
+            
+            // Re-render based on current tab and search
+            updateDisplay();
+        }
+
+        function updateTabCounts() {
+            const shortlistedNames = getShortlisted();
+            const allApplicants = [...allData['3d-generalist'], ...allData['character-animator']];
+            const shortlistedList = allApplicants.filter(a => shortlistedNames.includes(a.name));
+            
+            document.getElementById('tab3dCount').textContent = allData['3d-generalist'].length;
+            document.getElementById('tabAnimatorCount').textContent = allData['character-animator'].length;
+            document.getElementById('tabShortlistCount').textContent = shortlistedNames.length;
+            
+            document.getElementById('statInterviewing').textContent = shortlistedNames.length;
+        }
 
         function renderTable(data) {
             const tableBody = document.getElementById('tableBody');
             tableBody.innerHTML = '';
 
             const total = data.length;
+            // Count top picks within the filtered data
             const topPicks = data.filter(a => a.fit_category === 'Top fit').length;
             const other = data.filter(a => a.fit_category !== 'Top fit').length;
 
@@ -462,10 +527,19 @@
             const config = tabConfig[currentTab];
             document.getElementById('subtitleText').textContent = config.subtitle(total);
 
+            if (data.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:40px; color:var(--text-secondary)">
+                    ${currentTab === 'for-interview' ? 'No candidates shortlisted yet.' : 'No applicants found.'}
+                </td></tr>`;
+                return;
+            }
+
+            const shortlistedNames = getShortlisted();
+
             data.forEach(app => {
                 const tr = document.createElement('tr');
+                const isShortlisted = shortlistedNames.includes(app.name);
 
-                const statusClass = app.fit_category === 'Top fit' ? 'status-top' : 'status-not';
                 let portfolio;
                 if (app.portfolio_link && app.portfolio_link.startsWith('http')) {
                     portfolio = `<a href="${app.portfolio_link}" target="_blank" class="portfolio-link">View Portfolio</a>`;
@@ -476,16 +550,31 @@
                 }
 
                 let resumeBtn;
-                if (app.resume_link && (app.resume_link.startsWith('http') || app.resume_link.startsWith('CVs/'))) {
+                if (app.resume_link && app.resume_link.startsWith('http')) {
                     resumeBtn = `<a href="${encodeURI(app.resume_link)}" target="_blank" class="btn-resume">Download Resume</a>`;
                 } else {
                     resumeBtn = `<button class="btn-resume disabled">No Resume Link</button>`;
                 }
 
+                // Determine the correct role based on the data source if we are in the "for-interview" tab
+                let displayRole = config.role;
+                if (currentTab === 'for-interview') {
+                    // Try to find which category they belong to
+                    const isAnimator = allData['character-animator'].some(a => a.name === app.name);
+                    displayRole = isAnimator ? 'Character Animator' : '3D Generalist';
+                }
+
                 tr.innerHTML = `
                     <td>
+                        <button class="btn-shortlist ${isShortlisted ? 'active' : ''}" 
+                                onclick="toggleShortlist('${app.name.replace(/'/g, "\\'")}')"
+                                title="${isShortlisted ? 'Remove from Interview List' : 'Add to Interview List'}">
+                            ${isShortlisted ? '★' : '☆'}
+                        </button>
+                    </td>
+                    <td>
                         <div class="applicant-name">${app.name}</div>
-                        <div style="font-size:0.85rem; color:var(--text-secondary)">${config.role}</div>
+                        <div style="font-size:0.85rem; color:var(--text-secondary)">${displayRole}</div>
                     </td>
                     <td>
                         <div class="action-links">
@@ -512,8 +601,30 @@
             // Clear search
             document.getElementById('searchInput').value = '';
 
-            // Render data for this tab
-            renderTable(allData[tabId]);
+            // Update display
+            updateDisplay();
+        }
+
+        function updateDisplay() {
+            const term = document.getElementById('searchInput').value.toLowerCase();
+            let data;
+            
+            if (currentTab === 'for-interview') {
+                const shortlistedNames = getShortlisted();
+                const allApplicants = [...allData['3d-generalist'], ...allData['character-animator']];
+                // Use a Map to de-duplicate if necessary (shouldn't be, but safe)
+                data = allApplicants.filter(a => shortlistedNames.includes(a.name));
+            } else {
+                data = allData[currentTab];
+            }
+
+            const filtered = data.filter(app =>
+                app.name.toLowerCase().includes(term) ||
+                (app.fit_category && app.fit_category.toLowerCase().includes(term))
+            );
+            
+            renderTable(filtered);
+            updateTabCounts();
         }
 
         async function loadAllData() {
@@ -527,26 +638,15 @@
                 allData['3d-generalist'] = await generalistRes.json();
                 allData['character-animator'] = await animatorRes.json();
 
-                // Update tab counts
-                document.getElementById('tab3dCount').textContent = allData['3d-generalist'].length;
-                document.getElementById('tabAnimatorCount').textContent = allData['character-animator'].length;
-
-                // Render initial tab
-                renderTable(allData[currentTab]);
+                // Initial counts and display
+                updateDisplay();
 
                 // Search functionality
-                document.getElementById('searchInput').addEventListener('input', (e) => {
-                    const term = e.target.value.toLowerCase();
-                    const filtered = allData[currentTab].filter(app =>
-                        app.name.toLowerCase().includes(term) ||
-                        app.fit_category.toLowerCase().includes(term)
-                    );
-                    renderTable(filtered);
-                });
+                document.getElementById('searchInput').addEventListener('input', updateDisplay);
 
             } catch (err) {
                 console.error('Error loading data:', err);
-                document.getElementById('tableBody').innerHTML = '<tr><td colspan="5" style="text-align:center; padding:40px;">Error loading applicant data. Please ensure JSON files are present.</td></tr>';
+                document.getElementById('tableBody').innerHTML = '<tr><td colspan="4" style="text-align:center; padding:40px;">Error loading applicant data. Please ensure JSON files are present.</td></tr>';
             }
         }
 
