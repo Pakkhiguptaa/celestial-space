@@ -313,13 +313,14 @@
             background: transparent;
             border: none;
             color: var(--text-secondary);
-            padding: 8px;
-            font-size: 1.5rem;
+            padding: 4px;
+            font-size: 1.4rem;
             cursor: pointer;
             transition: all 0.3s ease;
             display: flex;
             align-items: center;
             justify-content: center;
+            line-height: 1;
         }
 
         .btn-shortlist:hover {
@@ -426,10 +427,6 @@
                 <div class="value" id="statTopPicks">0</div>
             </div>
             <div class="stat-card">
-                <h3>Other</h3>
-                <div class="value" id="statOther">0</div>
-            </div>
-            <div class="stat-card">
                 <h3>Shortlisted</h3>
                 <div class="value" id="statInterviewing">0</div>
             </div>
@@ -443,7 +440,6 @@
             <table id="applicantsTable">
                 <thead>
                     <tr>
-                        <th style="width: 50px;"></th>
                         <th>Applicant</th>
                         <th>Links</th>
                         <th>Portfolio</th>
@@ -522,7 +518,6 @@
 
             document.getElementById('statTotal').textContent = total;
             document.getElementById('statTopPicks').textContent = topPicks;
-            document.getElementById('statOther').textContent = other;
 
             const config = tabConfig[currentTab];
             document.getElementById('subtitleText').textContent = config.subtitle(total);
@@ -566,15 +561,17 @@
 
                 tr.innerHTML = `
                     <td>
-                        <button class="btn-shortlist ${isShortlisted ? 'active' : ''}" 
-                                onclick="toggleShortlist('${app.name.replace(/'/g, "\\'")}')"
-                                title="${isShortlisted ? 'Remove from Interview List' : 'Add to Interview List'}">
-                            ${isShortlisted ? '★' : '☆'}
-                        </button>
-                    </td>
-                    <td>
-                        <div class="applicant-name">${app.name}</div>
-                        <div style="font-size:0.85rem; color:var(--text-secondary)">${displayRole}</div>
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <button class="btn-shortlist ${isShortlisted ? 'active' : ''}" 
+                                    onclick="toggleShortlist('${app.name.replace(/'/g, "\\'")}')"
+                                    title="${isShortlisted ? 'Remove from Interview List' : 'Add to Interview List'}">
+                                ${isShortlisted ? '★' : '☆'}
+                            </button>
+                            <div>
+                                <div class="applicant-name">${app.name}</div>
+                                <div style="font-size:0.85rem; color:var(--text-secondary)">${displayRole}</div>
+                            </div>
+                        </div>
                     </td>
                     <td>
                         <div class="action-links">
