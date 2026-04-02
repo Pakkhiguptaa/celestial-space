@@ -6,7 +6,7 @@
 // ==================== API KEYS (hardcoded) ====================
 const KEYS = {
   tavily: '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',
-  llm:    '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',
+  llm:    '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',
 };
 
 // ==================== STATE ====================
@@ -104,14 +104,16 @@ function setLoading(loading) {
  * Call GitHub Models GPT-4o
  */
 async function callLLM(systemPrompt, userPrompt) {
-  const res = await fetch('https://models.inference.ai.azure.com/chat/completions', {
+  const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${STATE.keys.llm}`,
+      'HTTP-Referer': 'https://github.com/Pakkhiguptaa/celestial-space',
+      'X-Title': 'GoNoGo Agent',
     },
     body: JSON.stringify({
-      model: 'Llama-3.3-70B-Instruct',
+      model: 'openai/gpt-4o-2024-08-06',
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userPrompt },
@@ -133,14 +135,16 @@ async function callLLM(systemPrompt, userPrompt) {
  * Call LLM without JSON mode (for free-form text)
  */
 async function callLLMText(systemPrompt, userPrompt) {
-  const res = await fetch('https://models.inference.ai.azure.com/chat/completions', {
+  const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${STATE.keys.llm}`,
+      'HTTP-Referer': 'https://github.com/Pakkhiguptaa/celestial-space',
+      'X-Title': 'GoNoGo Agent',
     },
     body: JSON.stringify({
-      model: 'Llama-3.3-70B-Instruct',
+      model: 'openai/gpt-4o-2024-08-06',
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userPrompt },
