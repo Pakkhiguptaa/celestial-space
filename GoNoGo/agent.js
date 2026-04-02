@@ -6,7 +6,7 @@
 // ==================== API KEYS (hardcoded) ====================
 const KEYS = {
   tavily: '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',
-  llm:    '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',
+  llm:    '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',
 };
 
 // ==================== STATE ====================
